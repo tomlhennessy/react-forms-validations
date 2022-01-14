@@ -38,13 +38,18 @@ the `errors` array.
 
 ## Render Validation Errors
 
+Add a conditional to the `onSubmit` function that returns an `alert` saying
+`Cannot Submit` if `validationErrors` has a length greater than 0. If
+there are no validation errors, it should submit the form and reset all the
+state variables.
+
 In the return of the function component (above the first input inside of your
 form element), use an inline conditional expression with a logical `&&` operator
 to conditionally render an unordered list of validation messages if the
 `validationErrors` array has a `length` greater than `0`:
 
 ```js
-{!validationErrors.length && (
+{validationErrors.length > 0 && (
    <div>
      The following errors were found:
      <ul>
@@ -56,13 +61,27 @@ to conditionally render an unordered list of validation messages if the
 )}
 ```
 
-Add another conditional to the `onSubmit` function that returns an `alert`
-saying `Cannot Submit` if the `validationErrors` state has a length greater than
-0. If there are no validation errors, it should submit the form and reset all
-the state variables.
+> **Note**: You must explicitly check that `validationErrors.length` is `> 0`
+> here. Why? Try using only `validationErrors.length` as the condition and enter
+> a valid name and email to find out!
 
-Putting all of that together, here's what the updated `ContactUs` function
-component should now look like:
+You should now be able to see your error messages. Yea! If you refresh your
+sandbox browser, however, you will see that there is now another problem: the
+error messages show whenever the `Name` and `Email` fields lack valid input,
+including for a blank form! This happens because the `useEffect` runs after
+**every** render. After the first render, the `useEffect` runs, sees that `Name`
+and `Email` do not have valid input because they are blank, and sets
+`validationErrors` accordingly.
+
+You don't want a new form to show errors. In fact, you don't want to display any
+errors until a user tries to submit the form. To fix this, create a new state
+variable `hasSubmitted` that is initialized to `false`. Set it to `true` when a
+user clicks `Submit` and reset it to `false` on a successful submission. In the
+component's `return` statement, add this variable to the conditional checking
+whether or not to render errors to the page.
+
+Putting all of this together, your updated `ContactUs` function
+component should now look something like this:
 
 ```js
 // ./src/components/ContactUs/index.js
@@ -75,17 +94,19 @@ function ContactUs(props) {
   const [phoneType, setPhoneType] = useState('');
   const [comments, setComments] = useState('');
   const [validationErrors, setValidationErrors] = useState([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   useEffect(() => {
     const errors = [];
-    if(!name.length) errors.push('Please enter your Name');
-    if(!email.includes('@')) errors.push('Please provide a valid Email');
+    if (!name.length) errors.push('Please enter your Name');
+    if (!email.includes('@')) errors.push('Please provide a valid Email');
     setValidationErrors(errors);
   }, [name, email])
 
   const onSubmit = e => {
     e.preventDefault();
 
+    setHasSubmitted(true);
     if (validationErrors.length) return alert(`Cannot Submit`);
 
     const contactUsInformation = {
@@ -94,7 +115,7 @@ function ContactUs(props) {
       phone,
       phoneType,
       comments,
-      submittedOn: new Date(),
+      submittedOn: new Date()
     };
 
     console.log(contactUsInformation);
@@ -104,14 +125,13 @@ function ContactUs(props) {
     setPhoneType('');
     setComments('');
     setValidationErrors([]);
-  };
+    setHasSubmitted(false);
+  }
 
   return (
     <div>
       <h2>Contact Us</h2>
-      {/* You must explicitly check that validationErrors.length is > 0 here.
-       /* Why? Use only validationErrors.length as the condition to find out! */}
-      {validationErrors.length > 0 && (
+      {hasSubmitted && validationErrors.length > 0 && (
         <div>
           The following errors were found:
           <ul>
@@ -179,6 +199,8 @@ function ContactUs(props) {
 export default ContactUs;
 ```
 
+## Test your code
+
 In your sandbox browser, attempt to submit the form without providing any input.
 You should receive an alert and two validation error messages:
 
@@ -188,6 +210,10 @@ The following errors were found:
   * Please enter your Name
   * Please provide a valid Email
 ```
+
+Now fill in the form fields. Note that the error messages go away as you fulfill
+their conditions. When you have entered your name and a valid email, click
+`Submit` again. Success!
 
 Overall, this approach to validating the form is relatively simple. But there
 are other ways to validate, including the use of packages such as [validatorjs].
@@ -209,11 +235,11 @@ feedback--and not as your only means of validating user-provided data.
 
 ## What you have learned
 
-**Congratulations!** In this practice you have learned how to
+**Congratulations!** In this practice you have learned
 
-- Implement simple client-side form validations
-- Differentiate between validating your inputs on the client and validating them
-  on the server
+- How to implement simple client-side form validations
+- The difference between validating inputs on the client and validating them on
+  the server
 
 [validatorjs]: https://github.com/validatorjs/validator.js
 [CodeSandbox]: https://www.codesandbox.io

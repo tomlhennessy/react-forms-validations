@@ -31,7 +31,7 @@ function ContactUs() {
     setPhone('');
     setPhoneType('');
     setComments('');
-  };
+  }
 
   return (
     <div>
