@@ -237,9 +237,9 @@ feedback--and not as your only means of validating user-provided data.
 
 **Congratulations!** In this practice you have learned
 
-- How to implement simple client-side form validations
-- The difference between validating inputs on the client and validating them on
-  the server
+1. How to implement simple client-side form validations
+2. The difference between validating inputs on the client and validating them on
+   the server
 
 [validatorjs]: https://github.com/validatorjs/validator.js
 [CodeSandbox]: https://www.codesandbox.io
