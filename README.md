@@ -216,7 +216,7 @@ their conditions. When you have entered your name and a valid email, click
 `Submit` again. Success!
 
 Overall, this approach to validating the form is relatively simple. But there
-are other ways to validate, including the use of packages such as [validatorjs].
+are other ways to validate, including the use of packages such as [validator.js].
 
 ### Client-side vs server-side validation
 
@@ -241,5 +241,5 @@ feedback--and not as your only means of validating user-provided data.
 2. The difference between validating inputs on the client and validating them on
    the server
 
-[validatorjs]: https://github.com/validatorjs/validator.js
+[validator.js]: https://github.com/validatorjs/validator.js
 [CodeSandbox]: https://www.codesandbox.io
