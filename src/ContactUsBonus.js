@@ -1,15 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-function ContactUs() {
+function ContactUsBonus() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [phoneType, setPhoneType] = useState('');
   const [comments, setComments] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  
+  useEffect(() => {
+      const errors = {name:[], email:[]};
+      if (!name.length) errors['name'].push('Please enter your Name');
+      if (name.length > 30) errors['name'].push('Name must be less than 30 characters')
 
+      if (email.length && !email.includes('@')) errors['email'].push('Please provide a valid Email');
+      if (!email.length) errors['email'].push('Please provide an Email.')
+      
+      setValidationErrors(errors);
+  }, [name, email]);
+  
   const onSubmit = e => {
     // Prevent the default form behavior so the page doesn't reload.
     e.preventDefault();
+
+    setHasSubmitted(true);
+    if (Object.values(validationErrors).length) return alert(`Cannot Submit`);
 
     // Create a new object for the contact us information.
     const contactUsInformation = {
@@ -31,6 +47,8 @@ function ContactUs() {
     setPhone('');
     setPhoneType('');
     setComments('');
+    setValidationErrors({});
+    setHasSubmitted(false);
   }
 
   return (
@@ -45,6 +63,11 @@ function ContactUs() {
             onChange={e => setName(e.target.value)}
             value={name}
           />
+          {hasSubmitted && validationErrors.name.length > 0 && validationErrors.name.map((error, idx) => (
+              <ul key={idx}>
+                  <li className='error'>* {error}</li>
+              </ul>
+          ))}
         </div>
         <div>
           <label htmlFor='email'>Email:</label>
@@ -54,6 +77,11 @@ function ContactUs() {
             onChange={e => setEmail(e.target.value)}
             value={email}
           />
+          {hasSubmitted && validationErrors.email.length > 0 && validationErrors.email.map((error, idx) => (
+              <ul key={idx}>
+                  <li className='error'>* {error}</li>
+              </ul>
+          ))}
         </div>
         <div>
           <label htmlFor='phone'>Phone:</label>
@@ -91,4 +119,4 @@ function ContactUs() {
   );
 }
 
-export default ContactUs;
+export default ContactUsBonus;

@@ -15,55 +15,56 @@ starter repo, then load the repo into [CodeSandbox].
 
 To set up validation, you will first add a slice of state with two indexes,
 `validationErrors` and `setValidationErrors`. It should have an initial state of
-an empty array.
+an empty object.
 
 ```js
-const [validationErrors, setValidationErrors] = useState([]);
+const [validationErrors, setValidationErrors] = useState({});
 ```
 
 You will validate the `name` and `email` inputs. Create a `useEffect` that
 listens for the `name` and `email`. Inside the `useEffect`, add an `errors`
-variable and assign it an empty array. This will be your mutable array.
+variable and assign it an empty object. This will be your mutable object.
 
 Still inside the `useEffect`, create two conditionals:
 
 1. The first should check `name` to see if its length is greater than 0. If it
-   isn't, push the message `Please enter your Name` to the `errors` array.
+   isn't, add a key of `name` to the `errors` object with a string error message
+   `Please enter your Name` as its value.
 2. The second conditional should check to see if the `email` input has an `@` in
-   it. If it doesn't, push the message `Please provide a valid Email` to the
-   `errors` array.
+   it. If it doesn't, add a key of `email` to the `errors` object with a string
+   error message `Please provide a valid Email` as its value.
 
 Finally, before concluding the `useEffect`, set the `validationErrors` state to
-the `errors` array.
+the `errors` object.
+
+The `validationErrors` should be an object that looks like this if the `name`
+field is empty and the `email` field doesn't have an `@` in it.
+
+```json
+{
+  "name": "Please enter your Name",
+  "email": "Please provide a valid Email"
+}
+```
 
 ## Render Validation Errors
 
 Add a conditional to the `onSubmit` function that returns an `alert` saying
-`Cannot Submit` if `validationErrors` has a length greater than 0. If
-there are no validation errors, it should submit the form and reset all the
-state variables.
+`Cannot Submit` if `validationErrors` object has any key-value pairs. If
+there are no validation errors (the `validationErrors` object has NO key-value
+pairs), it should NOT show an alert, and instead, submit the form and reset all
+the state variables.
 
-In the return of the function component (above the first input inside of your
-form element), use an inline conditional expression with a logical `&&` operator
-to conditionally render an unordered list of validation messages if the
-`validationErrors` array has a `length` greater than `0`:
+In the return of the function component, below the `name` input and the `email`
+input fields, use an inline conditional expression with a logical `&&` operator
+to conditionally render a `div.error` with the field's error extracted from the
+`validationErrors` object.
 
 ```js
-{validationErrors.length > 0 && (
-   <div>
-     The following errors were found:
-     <ul>
-       {validationErrors.map(error => (
-         <li key={error}>{error}</li>
-       ))}
-     </ul>
-   </div>
+{validationErrors.email && (
+    <div className="error">* {validationErrors.email}</div>
 )}
 ```
-
-> **Note**: You must explicitly check that `validationErrors.length` is `> 0`
-> here. Why? Try using only `validationErrors.length` as the condition and enter
-> a valid name and email to find out!
 
 You should now be able to see your error messages. Yea! If you refresh your
 sandbox browser, however, you will see that there is now another problem: the
@@ -76,38 +77,42 @@ and `Email` do not have valid input because they are blank, and sets
 You don't want a new form to show errors. In fact, you don't want to display any
 errors until a user tries to submit the form. To fix this, create a new state
 variable `hasSubmitted` that is initialized to `false`. Set it to `true` when a
-user clicks `Submit` and reset it to `false` on a successful submission. In the
-component's `return` statement, add this variable to the conditional checking
-whether or not to render errors to the page.
+user clicks `Submit` (and before the alert is triggered). Set `hasSubmitted`
+to `false` on a successful submission.
+
+In the component's `return` statement, add this variable to the conditional
+checking whether or not to render the error messages to the page.
 
 Putting all of this together, your updated `ContactUs` function
 component should now look something like this:
 
 ```js
-// ./src/components/ContactUs/index.js
-import { useEffect, useState } from 'react';
+// ./src/components/ContactUs.js
+import { useState, useEffect } from 'react';
 
-function ContactUs(props) {
+function ContactUs() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [phoneType, setPhoneType] = useState('');
   const [comments, setComments] = useState('');
-  const [validationErrors, setValidationErrors] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   useEffect(() => {
-    const errors = [];
-    if (!name.length) errors.push('Please enter your Name');
-    if (!email.includes('@')) errors.push('Please provide a valid Email');
-    setValidationErrors(errors);
+      if (hasSubmitted) {
+        const errors = {};
+        if (!name.length) errors['name']='Please enter your Name';
+        if (!email.includes('@')) errors['email']='Please provide a valid Email';
+        setValidationErrors(errors);
+      }
   }, [name, email])
 
   const onSubmit = e => {
     e.preventDefault();
 
     setHasSubmitted(true);
-    if (validationErrors.length) return alert(`Cannot Submit`);
+    if (Object.values(validationErrors).length) return alert(`Cannot Submit`);
 
     const contactUsInformation = {
       name,
@@ -124,23 +129,13 @@ function ContactUs(props) {
     setPhone('');
     setPhoneType('');
     setComments('');
-    setValidationErrors([]);
+    setValidationErrors({});
     setHasSubmitted(false);
   }
 
   return (
     <div>
       <h2>Contact Us</h2>
-      {hasSubmitted && validationErrors.length > 0 && (
-        <div>
-          The following errors were found:
-          <ul>
-            {validationErrors.map(error => (
-              <li key={error}>{error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
       <form onSubmit={onSubmit}>
         <div>
           <label htmlFor='name'>Name:</label>
@@ -150,6 +145,9 @@ function ContactUs(props) {
             onChange={e => setName(e.target.value)}
             value={name}
           />
+          {validationErrors.name && (
+            <div className='error'>* {validationErrors.name}</div>
+          )}
         </div>
         <div>
           <label htmlFor='email'>Email:</label>
@@ -159,6 +157,9 @@ function ContactUs(props) {
             onChange={e => setEmail(e.target.value)}
             value={email}
           />
+          {validationErrors.email && (
+            <div className='error'>* {validationErrors.email}</div>
+          )}
         </div>
         <div>
           <label htmlFor='phone'>Phone:</label>
@@ -193,8 +194,8 @@ function ContactUs(props) {
         <button>Submit</button>
       </form>
     </div>
-   );
- }
+  );
+}
 
 export default ContactUs;
 ```
