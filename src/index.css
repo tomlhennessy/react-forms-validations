@@ -5,7 +5,10 @@
 
 .error {
     color: var(--error-msg-color);
-    font-size: var(--error-font-size)
+    font-size: var(--error-font-size);
+    height: 15px;
+    width: 220px;
+    margin: 3px;
 }
 
 ul {

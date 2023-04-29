@@ -50,21 +50,27 @@ field is empty and the `email` field doesn't have an `@` in it.
 ## Render Validation Errors
 
 Add a conditional to the `onSubmit` function that returns an `alert` saying
-`Cannot Submit` if `validationErrors` object has any key-value pairs. If
-there are no validation errors (the `validationErrors` object has NO key-value
-pairs), it should NOT show an alert, and instead, submit the form and reset all
-the state variables.
+`The following errors were found:` followed by the appropriate errors if 
+`validationErrors` object has any key-value pairs. If there are no validation 
+errors (i.e., the `validationErrors` object has NO key-value pairs), it should NOT 
+show an alert but should instead submit the form and reset all the state variables.
 
 In the return of the function component, below the `name` input and the `email`
 input fields, use an inline conditional expression with a logical `&&` operator
-to conditionally render a `div.error` with the field's error extracted from the
-`validationErrors` object.
+to display any errors extracted from the `validationErrors` object inside a
+`div.error`:
 
 ```js
-{validationErrors.email && (
-    <div className="error">* {validationErrors.email}</div>
-)}
+<div className='error'>
+  {validationErrors.name && `* ${validationErrors.name}`}
+</div>
 ```
+
+> **Note:** By putting the `div.error` outside the conditional--and adding
+> height and width properties, which __index.css__ already does for you--you
+> ensure that the error `div` will be present in the form even when empty. As a
+> result, your form will not have to shift the fields to accomodate any error
+> messages, making for a smoother user experience.
 
 You should now be able to see your error messages. Yea! If you refresh your
 sandbox browser, however, you will see that there is now another problem: the
@@ -100,19 +106,21 @@ function ContactUs() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   useEffect(() => {
-      if (hasSubmitted) {
-        const errors = {};
-        if (!name.length) errors['name']='Please enter your Name';
-        if (!email.includes('@')) errors['email']='Please provide a valid Email';
-        setValidationErrors(errors);
-      }
+    const errors = {};
+    if (!name.length) errors['name']='Please enter your Name';
+    if (!email.includes('@')) errors['email']='Please provide a valid Email';
+    setValidationErrors(errors);
   }, [name, email])
 
   const onSubmit = e => {
     e.preventDefault();
 
     setHasSubmitted(true);
-    if (Object.values(validationErrors).length) return alert(`Cannot Submit`);
+    if (Object.values(validationErrors).length) 
+      return alert(`The following errors were found:
+      
+        ${validationErrors.name ? "* " + validationErrors.name : ""}
+        ${validationErrors.email ? "* " + validationErrors.email : ""}`);
 
     const contactUsInformation = {
       name,
@@ -145,9 +153,9 @@ function ContactUs() {
             onChange={e => setName(e.target.value)}
             value={name}
           />
-          {validationErrors.name && (
-            <div className='error'>* {validationErrors.name}</div>
-          )}
+          <div className='error'>
+            {hasSubmitted && validationErrors.name && `* ${validationErrors.name}`}
+          </div>
         </div>
         <div>
           <label htmlFor='email'>Email:</label>
@@ -157,9 +165,9 @@ function ContactUs() {
             onChange={e => setEmail(e.target.value)}
             value={email}
           />
-          {validationErrors.email && (
-            <div className='error'>* {validationErrors.email}</div>
-          )}
+          <div className='error'>
+            {hasSubmitted && validationErrors.email && `* ${validationErrors.email}`}
+          </div>
         </div>
         <div>
           <label htmlFor='phone'>Phone:</label>
@@ -203,7 +211,7 @@ export default ContactUs;
 ## Test your code
 
 In your sandbox browser, attempt to submit the form without providing any input.
-You should receive an alert and two validation error messages:
+You should receive an alert with two validation error messages:
 
 ```plaintext
 The following errors were found:
